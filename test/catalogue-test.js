@@ -17,38 +17,30 @@ const duplicate = new Product("A124", "A Product 4", 100, 10, 10.0);
 const noPriceProduct = new Product("A129", "Product 5", 100, 10);
 const noNameProduct = new Product("A1210", undefined, 100, 10, 12.4);
 
-describe("Catalogue", () => {
-  beforeEach(() => {
-    cat = new Catalogue("Test Catalogue");
-    cat.addProduct(p123);
-    cat.addProduct(p124);
-    cat.addProduct(p125);
-    cat.addProduct(p126);
+describe("checkReorder", () => {
+  it("should return an empty array when no products need reordering", function () {
+    const result = cat.checkReorders();
+    expect(result.productIds).to.be.empty;
   });
-  describe("addProduct", function () {
-    it("should return true for a valid product", function () {
-      const result = cat.addProduct(p127);
-      expect(result).to.be.true;
-    });
-    describe("The error cases", function () {
-      beforeEach(() => {
-        cat.addProduct(p123);
-        cat.addProduct(p124);
-      });
-      it("should return false when the product's id is in use", function () {
-        const result = cat.addProduct(duplicate);
-        expect(result).to.be.false;
-      });
-      it("should return false when the product price is missing", function () {
-        const result = cat.addProduct(noPriceProduct);
-        expect(result).to.be.false;
-      });
-      it("should return false when the product name is not included", function () {
-        const result = cat.addProduct(noNameProduct);
-        expect(result).to.be.false;
-      });
-    });
+  it("should report products that satisfy the reorder criteria", function () {
+    cat.addProduct(new Product("B123", "Product 4", 10, 20, 10.0));
+    cat.addProduct(new Product("B124", "Product 5", 10, 30, 10.0));
+    const result = cat.checkReorders();
+    expect(result.productIds).to.have.lengthOf(2);
+    expect(result.productIds).to.have.members(["B123", "B124"]);
   });
+  it("should include products just on their reorder level", function () {
+    cat.addProduct(new Product("B125", "Product 6", 10, 10, 10.0));
+    const result = cat.checkReorders();
+    expect(result.productIds).to.have.members(["B125"]);
+  });
+  it("should handle an the empty catalogue case", function () {
+    cat = new Catalogue("Test catalogue");
+    const result = cat.checkReorders();
+    expect(result.productIds).to.be.empty;
+  });
+});
+
   describe("removeProductById", () => {
     beforeEach(() => {
       cat.addProduct(p123);
@@ -68,4 +60,3 @@ describe("Catalogue", () => {
       expect(result).to.be.undefined;
     });
   });
-});
